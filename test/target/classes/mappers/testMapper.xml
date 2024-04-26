@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="TestMapper">
+<sql id="search">
+	<if test="searchType!=null">
+		<if test="searchType=='all'.toString()">AND (BUSI_NUM LIKE CONCAT('%',#{keyword},'%')
+				 								OR CUSTOM LIKE CONCAT('%',#{keyword},'%') )</if>
+		<if test="searchType=='b'.toString()">AND BUSI_NUM LIKE CONCAT('%',#{keyword},'%')</if>
+		<if test="searchType=='c'.toString()">AND CUSTOM LIKE CONCAT('%',#{keyword},'%')</if>
+	</if>
+</sql>
+
+<sql id="searchCountry">
+	<if test="CountryType!=null">
+		<if test="CountryType=='all'.toString()">AND (COUNTRY_ENG LIKE CONCAT('%',#{CountryKeyword},'%') 
+												  OR  COUNTRY_KOR LIKE CONCAT('%',#{CountryKeyword},'%'))</if>	
+		<if test="CountryType=='eng'.toString()">AND COUNTRY_ENG LIKE CONCAT('%',#{CountryKeyword},'%') </if>
+		<if test="CountryType=='kor'.toString()">AND COUNTRY_KOR LIKE CONCAT('%',#{CountryKeyword},'%')	</if>
+	
+	</if>
+</sql>
+<insert id="insertCustomInfo">
+INSERT INTO CUSTOM
+			(BUSI_NUM,CUSTOM,SHORT,CEO,CHARGE_PERSON,BUSI_CONDITION,ITEM,POST_NUM,ADDR1,ADDR2,TEL,FAX,HOMEPAGE,CO_YN,FOREIGN_YN,TAX_YN,COUNTRY_ENG,COUNTRY_KOR,
+				SPECIAL_RELATION,TRADE_STOP,CONTRACT_PERIOD_S,CONTRACT_PERIOD_E,REGI_INFO_MAN,REGI_INFO_DATE,MOD_INFO_MAN,MOD_INFO_DATE)	 
+		VALUES
+			(#{BUSI_NUM},#{CUSTOM},#{SHORT},#{CEO},#{CHARGE_PERSON},#{BUSI_CONDITION},#{ITEM},#{POST_NUM},#{ADDR1},#{ADDR2},
+			#{TEL},#{FAX},#{HOMEPAGE},#{CO_YN},#{FOREIGN_YN},#{TAX_YN},#{COUNTRY_ENG},#{COUNTRY_KOR},
+			#{SPECIAL_RELATION},#{TRADE_STOP},#{CONTRACT_PERIOD_S},#{CONTRACT_PERIOD_E},#{REGI_INFO_MAN},#{REGI_INFO_DATE},#{MOD_INFO_MAN},#{MOD_INFO_DATE})	 
+	
+</insert>
+<insert id="insertAccountInfo">
+INSERT INTO ACCOUNT
+		(BUSI_NUM,FACTORY,TRADE_BANK,ACCOUNT_NUM)
+		VALUES (#{BUSI_NUM},#{FACTORY},#{TRADE_BANK},#{ACCOUNT_NUM})
+</insert>
+<select id="busiNumDupChk" resultType="int">
+SELECT COUNT(BUSI_NUM)
+	FROM CUSTOM
+WHERE BUSI_NUM =#{BUSI_NUM}
+</select>
+
+<select id="selectSearch"  resultType="com.test.www.vo.AllVO">
+SELECT BUSI_NUM,CUSTOM,SHORT,CEO,CHARGE_PERSON,BUSI_CONDITION,ITEM,
+		POST_NUM,ADDR1,ADDR2,TEL,FAX,HOMEPAGE,CO_YN,FOREIGN_YN,TAX_YN,COUNTRY_ENG,COUNTRY_KOR,
+		SPECIAL_RELATION,TRADE_STOP,CONTRACT_PERIOD_S,CONTRACT_PERIOD_E,REGI_INFO_MAN,REGI_INFO_DATE,MOD_INFO_MAN,MOD_INFO_DATE
+	FROM custom 
+WHERE 1=1
+		<include refid="search"/>
+ORDER BY REGI_INFO_DATE DESC
+</select>
+
+<select id="searchCountry" resultType="com.test.www.vo.CountryVO">
+SELECT COUNTRY_ENG, COUNTRY_KOR
+	FROM COUNTRY
+WHERE 1=1
+	<include refid="searchCountry"/>
+</select>
+
+<select id="selectByBusiNum" resultType="com.test.www.vo.AllVO">
+SELECT a.BUSI_NUM,a.CUSTOM,a.SHORT,a.CEO,a.CHARGE_PERSON,a.BUSI_CONDITION,a.ITEM,
+		a.POST_NUM,a.ADDR1,a.ADDR2,a.TEL,a.FAX,a.HOMEPAGE,a.CO_YN,a.FOREIGN_YN,a.TAX_YN,a.COUNTRY_ENG,a.COUNTRY_KOR,
+		a.SPECIAL_RELATION,a.TRADE_STOP,a.CONTRACT_PERIOD_S,a.CONTRACT_PERIOD_E,a.REGI_INFO_MAN,a.REGI_INFO_DATE,a.MOD_INFO_MAN,a.MOD_INFO_DATE,
+		b.BUSI_NUM,b.FACTORY,b.TRADE_BANK,b.ACCOUNT_NUM
+	FROM custom a
+LEFT OUTER JOIN account b
+	ON a.BUSI_NUM = b.BUSI_NUM
+WHERE 1=1
+	AND a.BUSI_NUM =#{BUSI_NUM}
+</select>
+
+<update id="updateCustomInfo">
+UPDATE custom 
+	SET CUSTOM=#{CUSTOM},SHORT=#{SHORT},CEO=#{CEO},CHARGE_PERSON=#{CHARGE_PERSON},BUSI_CONDITION=#{BUSI_CONDITION},ITEM=#{ITEM},
+		POST_NUM=#{POST_NUM},ADDR1=#{ADDR1},ADDR2=#{ADDR2},TEL=#{TEL},FAX=#{FAX},HOMEPAGE=#{HOMEPAGE},CO_YN=#{CO_YN},FOREIGN_YN=#{FOREIGN_YN},TAX_YN=#{TAX_YN},
+		COUNTRY_ENG=#{COUNTRY_ENG},COUNTRY_KOR=#{COUNTRY_KOR},SPECIAL_RELATION=#{SPECIAL_RELATION},TRADE_STOP=#{TRADE_STOP},
+		CONTRACT_PERIOD_S=#{CONTRACT_PERIOD_S},CONTRACT_PERIOD_E=#{CONTRACT_PERIOD_E},MOD_INFO_MAN=#{MOD_INFO_MAN},MOD_INFO_DATE=#{MOD_INFO_DATE}
+WHERE 1=1
+	AND BUSI_NUM=#{BUSI_NUM}
+</update>
+<update id="updateAccountInfo">
+UPDATE account 
+	SET FACTORY=#{FACTORY},TRADE_BANK=#{TRADE_BANK},ACCOUNT_NUM=#{ACCOUNT_NUM}
+WHERE 1=1
+	AND BUSI_NUM=#{BUSI_NUM}
+</update>
+
+<delete id="deleteCustomInfo">
+DELETE FROM custom 
+	WHERE BUSI_NUM=#{BUSI_NUM}
+</delete>
+<delete id="deleteAccountInfo">
+DELETE FROM Account 
+	WHERE BUSI_NUM=#{BUSI_NUM}
+</delete>
+</mapper>
